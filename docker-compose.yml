@@ -1,0 +1,18 @@
+version: '3'
+services:
+  dialogflow_proxy:
+    env_file:
+      - dialogflow_proxy.env
+    restart: always
+    ports:
+      - "80"
+    build: ./DialogflowProxy
+  alice_to_dialogflow:
+    environment:
+      - DIALOGFLOW_PROXY_URI=http://dialogflow_proxy/api/dialogflow/detectIntent
+    env_file:
+      - alice_to_dialogflow.env
+    build: ./alice_to_dialogflow
+    restart: always
+    volumes: 
+      - ~/.alice_to_dialogflow/:/allowed_userids

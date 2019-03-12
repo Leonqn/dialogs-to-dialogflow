@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
 using System;
+using Newtonsoft.Json.Serialization;
 
 namespace DialogflowProxy
 {
@@ -21,7 +22,15 @@ namespace DialogflowProxy
         public void Configure(IApplicationBuilder app, ILogger<Startup> logger)
         {
             var client = SessionsClient.Create();
-            app.Map("/api/dialogflow", builder =>
+
+            var jsonSettings = new JsonSerializerSettings
+            {
+                ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new CamelCaseNamingStrategy()
+                },
+            };
+            app.Map("/api/dialogflow/detectIntent", builder =>
             {
                 builder.Run(async ctx =>
                 {
@@ -41,8 +50,7 @@ namespace DialogflowProxy
                                 }
                             }
                         );
-                        await ctx.Response.WriteAsync(JsonConvert.SerializeObject(response));
-
+                        await ctx.Response.WriteAsync(JsonConvert.SerializeObject(response, jsonSettings));
                     }
                     catch (Exception e)
                     {
