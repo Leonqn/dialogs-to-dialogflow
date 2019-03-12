@@ -1,18 +1,24 @@
 version: '3'
 services:
   dialogflow_proxy:
-    env_file:
-      - dialogflow_proxy.env
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/google/creds.json
     restart: always
     ports:
       - "80"
+    volumes: 
+      - {PATH TO GOOGLE CREDS}:/google/creds.json
     build: ./DialogflowProxy
   alice_to_dialogflow:
     environment:
       - DIALOGFLOW_PROXY_URI=http://dialogflow_proxy/api/dialogflow/detectIntent
-    env_file:
-      - alice_to_dialogflow.env
+      - AUTHORIZED_DIALOG_IDS_PATH=/allowed_userids/allowed_userids.json
+      - RUST_LOG=alice_to_dialogflow::dialogs_dialogflow_handler=info
+      - PORT=80
+      - PROJECT_ID={DIALOGFLOW PROJECT ID}
+    ports:
+      - "8324:80"
     build: ./alice_to_dialogflow
-    restart: always
     volumes: 
-      - ~/.alice_to_dialogflow/:/allowed_userids
+      - {PATH TO ALLOWED USERIDS}:/allowed_userids/allowed_userids.json
+    restart: always

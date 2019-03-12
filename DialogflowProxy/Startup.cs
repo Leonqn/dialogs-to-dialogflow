@@ -14,6 +14,7 @@ namespace DialogflowProxy
         public string ProjectId { get; set; }
         public string SessionId { get; set; }
         public string Text { get; set; }
+        public string Event { get; set; }
         public string LanguageCode { get; set; }
     }
 
@@ -38,17 +39,27 @@ namespace DialogflowProxy
                     {
                         var body = await new StreamReader(ctx.Request.Body).ReadToEndAsync();
                         var request = JsonConvert.DeserializeObject<DialogflowRequest>(body);
-
+                        var queryInput =
+                            string.IsNullOrEmpty(request.Text)
+                                ? new QueryInput()
+                                {
+                                    Event = new EventInput
+                                    {
+                                        LanguageCode = request.LanguageCode,
+                                        Name = request.Event,
+                                    }
+                                }
+                                : new QueryInput()
+                                {
+                                    Text = new TextInput()
+                                    {
+                                        Text = request.Text,
+                                        LanguageCode = request.LanguageCode
+                                    }
+                                };
                         var response = await client.DetectIntentAsync(
                             session: new SessionName(request.ProjectId, request.SessionId),
-                            queryInput: new QueryInput()
-                            {
-                                Text = new TextInput()
-                                {
-                                    Text = request.Text,
-                                    LanguageCode = request.LanguageCode
-                                }
-                            }
+                            queryInput: queryInput
                         );
                         await ctx.Response.WriteAsync(JsonConvert.SerializeObject(response, jsonSettings));
                     }

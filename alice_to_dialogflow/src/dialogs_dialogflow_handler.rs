@@ -59,6 +59,7 @@ impl<G: Fn() -> Vec<String>> DialogsRequestsHandler for DialogsDialogflowHandler
                 project_id: self.inner.project_id.clone(),
                 session_id,
                 text: original_utterance,
+                event: "WELCOME".to_string(),
                 language_code: "ru-RU".to_string(),
             })
                 .map(move |resp| {
